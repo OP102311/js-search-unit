@@ -32,10 +32,22 @@ document.addEventListener("keydown", function(event) {
 function createInterface() {
     var searchUnit = document.createElement('div');
     searchUnit.id = "search-unit";
+    searchUnit.style.backgroundColor = "#F0F8FA";
+    searchUnit.style.border = "1px solid";
+    searchUnit.style.borderColor = "#AABBCC";
+    searchUnit.style.padding = "5px";
+    searchUnit.style.position = "fixed";
+    searchUnit.style.top = "0em";
+    searchUnit.style.left = "0.5em";
 
     var searchInput = document.createElement('input');
     searchInput.id = "search-input";
     searchInput.type = 'text';
+    searchInput.style.background = "url(images/search.png) no-repeat scroll";
+    searchInput.style.backgroundPosition = "right";
+    searchInput.style.paddingRight = "16px";
+    searchInput.style.marginRight = "14px";
+
     searchInput.setAttribute('onkeyup','searchText()');
 
     var searchCheckbox = document.createElement('input');
@@ -43,31 +55,44 @@ function createInterface() {
     createCheckbox('match-case', 'match case');
 
     var searchNextButton = document.createElement('input');
-    searchNextButton.type = 'button';
+    searchNextButton.type = 'image';
     searchNextButton.value = 'Next';
+    searchNextButton.src = "images/arrow-down.png";
+    searchNextButton.style.verticalAlign = "middle";
+    searchNextButton.style.padding = "3px";
     searchNextButton.addEventListener('click', function (e) {
         selectMatch(1);
         e.preventDefault();
     }, false);
 
     var searchPreviousButton = document.createElement('input');
-    searchPreviousButton.type = 'button';
+    searchPreviousButton.type = 'image';
     searchPreviousButton.value = 'Previous';
+    searchPreviousButton.src = "images/arrow-up.png";
+    searchPreviousButton.style.verticalAlign = "middle";
+    searchPreviousButton.style.padding = "3px";
     searchPreviousButton.addEventListener('click', function (e) {
         selectMatch(-1);
         e.preventDefault();
     }, false);
 
     var closeButton = document.createElement('input');
-    closeButton.type = 'button';
+    closeButton.type = 'image';
     closeButton.value = 'Close';
+    closeButton.src = "images/close.png";
+    closeButton.style.verticalAlign = "middle";
+    closeButton.style.padding = "3px";
+    closeButton.addEventListener('click', function (e) {
+        searchUnit.style.display = (searchUnit.style.display == 'none') ? '' : 'none';
+        e.preventDefault();
+    }, false);
 
     searchUnit.appendChild(searchInput);
     searchUnit.appendChild(createCheckbox('match-case', 'match case'));
     searchUnit.appendChild(createCheckbox('whole-word', 'whole word'));
     searchUnit.appendChild(createCheckbox('regular-exp', 'regular expression'));
-    searchUnit.appendChild(searchNextButton);
     searchUnit.appendChild(searchPreviousButton);
+    searchUnit.appendChild(searchNextButton);
     searchUnit.appendChild(closeButton);
 
     return searchUnit;
@@ -83,9 +108,13 @@ function createCheckbox(name, title) {
     var checkbox = document.createElement('input');
     checkbox.name = name;
     checkbox.type = 'checkbox';
+    checkbox.style.verticalAlign = "middle";
+
     var label = document.createElement('label');
     label.appendChild(checkbox);
     label.appendChild(document.createTextNode(title));
+    label.style.verticalAlign = "middle";
+    label.style.marginRight = "14px";
     return label;
 }
 
@@ -136,9 +165,16 @@ function selectMatch(offset) {
     getAllMatches();
     matchIndex += offset;
     matchIndex = matchIndex % matchesArray.length;
-    matchesArray[matchIndex].scrollIntoView(true);
+    matchesArray[matchIndex].scrollIntoView(false);
 
     for (var i = 0; i < matchesArray.length; i++) {
-        matchesArray[i].style.background = (matchIndex == i) ? "#FF0000" : "#FFFF00";
+        if (matchIndex == i) {
+            matchesArray[i].style.background = "#B0B04A";
+            matchesArray[i].style.color = "#FFFFFF";
+        } else {
+            matchesArray[i].style.background = "#FFFF00";
+            matchesArray[i].style.color = "#000000";
+        }
+
     }
 }
