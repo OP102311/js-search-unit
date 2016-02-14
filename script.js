@@ -2,6 +2,8 @@ var originalPage;
 
 var searchUnit;
 
+var matchIndex = -1;
+var matchesArray = [];
 /**
  * Initialization of searchUnit
  */
@@ -10,6 +12,7 @@ window.onload = function() {
     searchUnit = createInterface();
     document.body.appendChild(searchUnit);
 }
+
 /**
  * Shows or hides the search unit by pressing Ctrl+Alt+F
  */
@@ -42,10 +45,18 @@ function createInterface() {
     var searchNextButton = document.createElement('input');
     searchNextButton.type = 'button';
     searchNextButton.value = 'Next';
+    searchNextButton.addEventListener('click', function (e) {
+        selectMatch(1);
+        e.preventDefault();
+    }, false);
 
     var searchPreviousButton = document.createElement('input');
     searchPreviousButton.type = 'button';
     searchPreviousButton.value = 'Previous';
+    searchPreviousButton.addEventListener('click', function (e) {
+        selectMatch(-1);
+        e.preventDefault();
+    }, false);
 
     var closeButton = document.createElement('input');
     closeButton.type = 'button';
@@ -92,7 +103,7 @@ function searchText() {
         element.innerHTML = tempinnerHTML.replace(/>([^<]*)?([^>]*)?</gi, replacer);
         function replacer(str) {
             var regex = new RegExp(searchString, "g");
-            var result = str.replace(regex, '<span style="background:#FFFF00;">'+searchString+'</span>');
+            var result = str.replace(regex, '<span class="search-match" style="background:#FFFF00;">'+searchString+'</span>');
             return result;
         }
     }
@@ -107,4 +118,27 @@ function restorePage(element)
 {
     element.innerHTML = originalPage;
     return element;
+}
+
+/**
+ * Prepares matches array
+ */
+function getAllMatches() {
+    var container  = document.getElementById("content");
+    matchesArray = container.getElementsByClassName("search-match");
+}
+
+/**
+ * Focuses on next/previous search match
+ * @param offset
+ */
+function selectMatch(offset) {
+    getAllMatches();
+    matchIndex += offset;
+    matchIndex = matchIndex % matchesArray.length;
+    matchesArray[matchIndex].scrollIntoView(true);
+
+    for (var i = 0; i < matchesArray.length; i++) {
+        matchesArray[i].style.background = (matchIndex == i) ? "#FF0000" : "#FFFF00";
+    }
 }
