@@ -39,6 +39,7 @@ function createInterface() {
     searchUnit.style.position = "fixed";
     searchUnit.style.top = "0em";
     searchUnit.style.left = "0.5em";
+    searchUnit.style.display = "none";
 
     var searchInput = document.createElement('input');
     searchInput.id = "search-input";
@@ -175,6 +176,23 @@ function selectMatch(offset) {
             matchesArray[i].style.background = "#FFFF00";
             matchesArray[i].style.color = "#000000";
         }
-
     }
+}
+
+/**
+ *
+ * @param id
+ * @returns {*}
+ */
+function getElementDisplayStyle(id) {
+    var divElement = document.getElementById(id);
+    var displayStyle;
+    if (divElement) {
+        if (window.getComputedStyle) {
+            displayStyle = window.getComputedStyle(divElement, null).getPropertyValue('display');
+        } else {
+            displayStyle = divElement.currentStyle.display;
+        }
+    }
+    return displayStyle;
 }
