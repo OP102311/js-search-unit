@@ -2,8 +2,6 @@ var originalPage;
 
 var searchUnit;
 
-var matchIndex = -1;
-var matchesArray = [];
 /**
  * Initialization of searchUnit
  */
@@ -32,69 +30,28 @@ document.addEventListener("keydown", function(event) {
 function createInterface() {
     var searchUnit = document.createElement('div');
     searchUnit.id = "search-unit";
-    searchUnit.style.backgroundColor = "#F0F8FA";
-    searchUnit.style.border = "1px solid";
-    searchUnit.style.borderColor = "#AABBCC";
-    searchUnit.style.padding = "5px";
-    searchUnit.style.position = "fixed";
-    searchUnit.style.top = "0em";
-    searchUnit.style.left = "0.5em";
-    searchUnit.style.display = "none";
+    searchUnit.style.cssText = 'background-color:#F0F8FA; border:1px solid #AABBCC; padding:5px; position:fixed; top:0em; left:0.5em; display:none;';
 
-    var searchInput = document.createElement('input');
-    searchInput.id = "search-input";
-    searchInput.type = 'text';
-    searchInput.style.background = "url(images/search.png) no-repeat scroll";
-    searchInput.style.backgroundPosition = "right";
-    searchInput.style.paddingRight = "16px";
-    searchInput.style.marginRight = "14px";
-
-    searchInput.setAttribute('onkeyup','searchText()');
-
-    var searchCheckbox = document.createElement('input');
-    searchCheckbox.type = 'checkbox';
-    createCheckbox('match-case', 'match case');
-
-    var searchNextButton = document.createElement('input');
-    searchNextButton.type = 'image';
-    searchNextButton.value = 'Next';
-    searchNextButton.src = "images/arrow-down.png";
-    searchNextButton.style.verticalAlign = "middle";
-    searchNextButton.style.padding = "3px";
-    searchNextButton.addEventListener('click', function (e) {
-        selectMatch(1);
+    searchUnit.appendChild(createInput('search-input', 'text', 'images/search.png', function(e) {
+        searchText();
         e.preventDefault();
-    }, false);
-
-    var searchPreviousButton = document.createElement('input');
-    searchPreviousButton.type = 'image';
-    searchPreviousButton.value = 'Previous';
-    searchPreviousButton.src = "images/arrow-up.png";
-    searchPreviousButton.style.verticalAlign = "middle";
-    searchPreviousButton.style.padding = "3px";
-    searchPreviousButton.addEventListener('click', function (e) {
-        selectMatch(-1);
-        e.preventDefault();
-    }, false);
-
-    var closeButton = document.createElement('input');
-    closeButton.type = 'image';
-    closeButton.value = 'Close';
-    closeButton.src = "images/close.png";
-    closeButton.style.verticalAlign = "middle";
-    closeButton.style.padding = "3px";
-    closeButton.addEventListener('click', function (e) {
-        searchUnit.style.display = (searchUnit.style.display == 'none') ? '' : 'none';
-        e.preventDefault();
-    }, false);
-
-    searchUnit.appendChild(searchInput);
+    }));
     searchUnit.appendChild(createCheckbox('match-case', 'match case'));
     searchUnit.appendChild(createCheckbox('whole-word', 'whole word'));
     searchUnit.appendChild(createCheckbox('regular-exp', 'regular expression'));
-    searchUnit.appendChild(searchPreviousButton);
-    searchUnit.appendChild(searchNextButton);
-    searchUnit.appendChild(closeButton);
+    searchUnit.appendChild(createInput('search-prev', 'image', 'images/arrow-up.png', function (e) {
+        selectMatch(-1);
+        e.preventDefault();
+    }));
+    searchUnit.appendChild(createInput('search-next', 'image', 'images/arrow-down.png', function (e) {
+        selectMatch(1);
+        e.preventDefault();
+    }));
+    searchUnit.appendChild(createInput('search-close', 'image', 'images/close.png', function (e) {
+        var searchUnit = document.getElementById('search-unit');
+        searchUnit.style.display = (searchUnit.style.display == 'none') ? '' : 'none';
+        e.preventDefault();
+    }));
 
     return searchUnit;
 }
@@ -120,21 +77,46 @@ function createCheckbox(name, title) {
 }
 
 /**
+ * Creates input element
+ * @param id
+ * @param type
+ * @param img
+ * @param handler
+ * @returns {Element}
+ */
+function createInput(id, type, img, handler) {
+    var input = document.createElement('input');
+    input.id = id;
+    input.type = type;
+    if (type == 'text') {
+        input.style.cssText = "padding-right: 16px; margin-right: 14px; background: url(" + img + ") 100% 50% no-repeat scroll;";
+        input.onkeyup = handler;
+    } else {
+        input.src = img;
+        input.style.cssText = 'vertical-align: middle; padding: 3px;';
+        input.onclick = handler;
+    }
+    return input;
+}
+
+/**
  * Finds and highlights the search result
  */
 function searchText() {
-    var element = document.getElementById("content");
-    element = restorePage(element);
-    var tempinnerHTML = element.innerHTML;
+    if (document.getElementById('search-input')) {
+        var element = document.getElementById("content");
+        element = restorePage(element);
+        var tempinnerHTML = element.innerHTML;
 
-    var searchString = document.getElementById('search-input').value;
+        var searchString = document.getElementById('search-input').value;
 
-    if (searchString!='') {
-        element.innerHTML = tempinnerHTML.replace(/>([^<]*)?([^>]*)?</gi, replacer);
-        function replacer(str) {
-            var regex = new RegExp(searchString, "g");
-            var result = str.replace(regex, '<span class="search-match" style="background:#FFFF00;">'+searchString+'</span>');
-            return result;
+        if (searchString!='') {
+            element.innerHTML = tempinnerHTML.replace(/>([^<]*)?([^>]*)?</gi, replacer);
+            function replacer(str) {
+                var regex = new RegExp(searchString, "g");
+                var result = str.replace(regex, '<span class="search-match" style="background:#FFFF00;">'+searchString+'</span>');
+                return result;
+            }
         }
     }
 }
@@ -151,30 +133,31 @@ function restorePage(element)
 }
 
 /**
- * Prepares matches array
- */
-function getAllMatches() {
-    var container  = document.getElementById("content");
-    matchesArray = container.getElementsByClassName("search-match");
-}
-
-/**
  * Focuses on next/previous search match
  * @param offset
  */
 function selectMatch(offset) {
-    getAllMatches();
-    matchIndex += offset;
-    matchIndex = matchIndex % matchesArray.length;
-    matchesArray[matchIndex].scrollIntoView(false);
+    var matchesArray = document.getElementsByClassName('search-match');
+    if (matchesArray.length > 1) {
+        //Можно сделать обход в одном цикле
+        var matchIndex = -1;
+        for (var i = 0; i < matchesArray.length; i++) {
+            if (matchesArray[i].id == 'match-selected') {
+                matchIndex = i;
+                matchesArray[i].id = '';
+                break;
+            }
+        }
 
-    for (var i = 0; i < matchesArray.length; i++) {
-        if (matchIndex == i) {
-            matchesArray[i].style.background = "#B0B04A";
-            matchesArray[i].style.color = "#FFFFFF";
-        } else {
-            matchesArray[i].style.background = "#FFFF00";
-            matchesArray[i].style.color = "#000000";
+        matchIndex += offset;
+        matchIndex = matchIndex > 0 ? matchIndex % matchesArray.length : 0;
+        matchesArray[matchIndex].scrollIntoView(false);
+        matchesArray[matchIndex].id = 'match-selected';
+
+        for (var i = 0; i < matchesArray.length; i++) {
+            matchesArray[i].style.cssText += (matchIndex == i)
+                ? 'background:#B0B04A; color:#FFFFFF;'
+                : 'background:#FFFF00; color:#000000;';
         }
     }
 }
