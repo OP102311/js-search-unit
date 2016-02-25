@@ -1,6 +1,9 @@
 (function(){
     var originalPage;
     var searchUnit;
+    var matchCase;
+    var wholeWord;
+    var regularExp;
 
     /**
      * Initialization of searchUnit
@@ -58,13 +61,13 @@
 
     /**
      * Creates checkbox element
-     * @param name
+     * @param id
      * @param title
      * @returns {HTMLElement}
      */
-    function createCheckbox(name, title) {
+    function createCheckbox(id, title) {
         var checkbox = document.createElement('input');
-        checkbox.name = name;
+        checkbox.id = id;
         checkbox.type = 'checkbox';
         checkbox.style.verticalAlign = "middle";
 
@@ -105,6 +108,9 @@
     function searchText(){
         var searchString = document.getElementById('search-input').value;
         var element = document.getElementById("content");
+        matchCase = document.getElementById('match-case').checked;
+        wholeWord = document.getElementById('whole-word').checked;
+        regularExp = document.getElementById('regular-exp').checked;
         element = restorePage(element);
         if (searchString!='') {
             highlightMatches(element, searchString, function(node, match) {
@@ -134,7 +140,8 @@
                     break;
                 case 3:
                     var diff = 0;
-                    child.data.replace(new RegExp(searchString, 'g'), function(all) {
+                    searchString = regularExp ? searchString : searchString.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+                    child.data.replace(new RegExp((wholeWord ? '\\b' : '') + searchString + (wholeWord ? '\\b' : ''), 'g' + (matchCase ? '' : 'i')), function(all) {
                         var args = [].slice.call(arguments),
                             offset = args[args.length - 2],
                             newTextNode = child.splitText(offset+diff), tag;
